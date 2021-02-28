@@ -50,7 +50,7 @@ all: $(BINDIR)/$(TARGET)
 # Compile object files together for main  binary
 $(BINDIR)/$(TARGET): $(OBJS)
 	mkdir -p $(BINDIR)
-	$(CXX) $(LDFLAGS) $? -o $@
+	$(CXX) $(LDFLAGS) $^ -o $@
 
 
 # Make test Binary
@@ -72,6 +72,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJDIR)/*.o $(BINDIR)/$(TARGET)
+	rm -f $(OBJDIR)/*.o $(BINDIR)/*
 
 distclean: clean

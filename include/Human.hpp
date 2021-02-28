@@ -1,13 +1,13 @@
 #ifndef HUMAN_HPP
 #define HUMAN_HPP
 
-#include "Player.hpp";
+#include "Player.hpp"
 
 class Board;
 
 class Human: public Player {
     public:
-    Move go(Board b);
+    Move go(Board *b);
 };
 
 #endif

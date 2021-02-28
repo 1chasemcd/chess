@@ -22,12 +22,13 @@ public:
 
     Board();
 
+    void exec_move(Move move);
     int get_piece_type(int piece);
     int get_piece_color(int piece);
     int index_of(char file, int rank);
 
     void set_from_fen(string fen_sequence);
-    //vector<Move> get_legal_moves();
+    vector<Move> get_legal_moves();
 };
 
 #endif

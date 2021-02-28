@@ -18,8 +18,8 @@ class UI {
 
     static bool display_to_white;
 
-    static void show_board(Board b);
-    static void show_gamesate(Board b);
+    static void show_board(Board *b);
+    static void show_gamesate(Board *b);
     static string get_input();
     static void warn(string warning);
 };

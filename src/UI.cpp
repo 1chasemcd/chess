@@ -7,16 +7,15 @@ using std::cin;
 
 string UI::unicode_piece_characters[7] = { " ", "♟︎", "♞", "♝", "♜", "♛", "♚"};
 string UI::alt_unicode_piece_characters[7] = { " ", "♙", "♘", "♗", "♖", "♕", "♔"};
-string UI::foreground_colors[2] = {"\033[0;30m", "\033[0;97m"};
-string UI::background_colors[2] = {"\033[0;41m", "\033[0;46m"};
-string UI::default_color = "\033[0m";
-string UI::warning_color = "\033[0;41m\033[0;30m";
+string UI::foreground_colors[2] = {"\e[0;30m", "\e[0;37m"};
+string UI::background_colors[2] = {"\e[41m", "\e[46m"};
+string UI::default_color = "\e[0m";
+string UI::warning_color ="\e[0;30m\e[41m";
 
 bool UI::display_to_white = true;
 
 
-void UI::show_board(Board b) {
-
+void UI::show_board(Board *b) {
     // Set variables based on board display directions
     const string file_label = (display_to_white) ? "  a b c d e f g h   \n" : "  h g f e d c b a   \n";
     const int rank_start = (display_to_white) ? 8 : 1;
@@ -36,13 +35,14 @@ void UI::show_board(Board b) {
         cout << rank << " ";
 
         for (char file = file_start; file != file_end; file += file_increment) {
-            piece = b.squares[b.index_of(file, rank)];
+            piece = b->squares[b->index_of(file, rank)];
 
-            string foreground = foreground_colors[b.get_piece_color(piece)];
+
+            string foreground = foreground_colors[b->get_piece_color(piece)];
             string background = background_colors[(rank + file) % 2];
 
             cout << foreground + background;
-            cout << unicode_piece_characters[b.get_piece_type(piece)] + " ";
+            cout << unicode_piece_characters[b->get_piece_type(piece)] + " ";
             cout << default_color;
         }
 
@@ -53,8 +53,8 @@ void UI::show_board(Board b) {
     cout << file_label;
 }
 
-void UI::show_gamesate(Board b) {
-    if (b.white_to_move) {
+void UI::show_gamesate(Board *b) {
+    if (b->white_to_move) {
         cout << "White to Move" << "\n";
     } else {
         cout << "Black to Move"  << "\n";
@@ -69,5 +69,5 @@ string UI::get_input() {
 }
 
 void UI::warn(string warning) {
-    cout << warning_color << warning << default_color;
+    cout << warning_color << "\n" << warning << default_color << "\n";
 }

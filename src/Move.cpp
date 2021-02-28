@@ -5,6 +5,13 @@
 
 using std::vector;
 
+Move::Move() {
+    to = 0;
+    from = 0;
+    is_valid = false;
+    castling = false;
+}
+
 Move::Move(string move_string) {
     if (is_valid_move_string(move_string)) {
         to = (move_string.at(1) - '1') * 8 + (tolower(move_string.at(0)) - 'a');
@@ -60,15 +67,14 @@ bool Move::is_valid_move_string(string move_string) {
     return regex_match(move_string, std::regex(str_template)) || move_string == "0-0" || move_string == "0-0-0";
 }
 
-bool Move::is_legal_move_on_board(Board board) {
-    // vector<Move> legal_moves = board.get_legal_moves();
+bool Move::is_legal_move_on_board(Board *b) {
+    vector<Move> legal_moves = b->get_legal_moves();
 
-    // for (int i = 0; i < legal_moves.size(); i++) {
-    //     if (legal_moves[i] == *this) {
-    //         return true;
-    //     }
-    // }
+    for (int i = 0; i < legal_moves.size(); i++) {
+        if (legal_moves[i] == *this) {
+            return true;
+        }
+    }
     
-    // return false;
-    return true;
+    return false;
 }

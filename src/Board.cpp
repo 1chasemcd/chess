@@ -1,5 +1,6 @@
 #include "../include/Board.hpp"
 #include "../include/Pieces.hpp"
+#include "../include/Move.hpp"
 
 Board::Board() {
     for (int i = 0; i < 64; i++) {
@@ -12,6 +13,11 @@ Board::Board() {
     en_passant_target = -1;
 
     set_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+}
+
+void Board::exec_move(Move move) {
+    squares[move.to] = squares[move.from];
+    squares[move.from] = 0;
 }
 
 int Board::get_piece_type(int piece) {
@@ -135,9 +141,10 @@ void Board::set_from_fen(string fen_sequence) {
 
 }
 
-// vector<Move> Board::get_legal_moves() {
-//     vector<Move> legal_moves;
+vector<Move> Board::get_legal_moves() {
+    vector<Move> legal_moves;
+    legal_moves.push_back(Move(0, 0));
 
 
-//     return legal_moves;
-// }
+    return legal_moves;
+}
