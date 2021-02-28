@@ -135,11 +135,9 @@ void Board::set_from_fen(string fen_sequence) {
 
 }
 
-Move* Board::get_legal_moves() {
-    Move moves[2] = {Move(0, 0), Move(0, 0)};
-    return moves;
-}
+// vector<Move> Board::get_legal_moves() {
+//     vector<Move> legal_moves;
 
-void Board::set_num_legal_moves() {
-    
-}
+
+//     return legal_moves;
+// }

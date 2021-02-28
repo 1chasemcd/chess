@@ -2,9 +2,13 @@
 #define BOARD_HPP
 
 #include <string>
-#include "Move.hpp"
+#include <vector>
 
 using std::string;
+using std::vector;
+
+// Forward declaration for Move
+class Move;
 
 class Board {
 public:
@@ -15,7 +19,6 @@ public:
     bool can_castle[4];
     int half_move_clock;
     int en_passant_target;
-    int num_legal_moves;
 
     Board();
 
@@ -24,8 +27,7 @@ public:
     int index_of(char file, int rank);
 
     void set_from_fen(string fen_sequence);
-    Move* get_legal_moves();
-    void set_num_legal_moves();
+    //vector<Move> get_legal_moves();
 };
 
 #endif

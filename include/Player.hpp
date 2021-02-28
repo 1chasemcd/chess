@@ -1,7 +1,7 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
-#include "Move.hpp"
+class Move;
 
 class Player {
     public:

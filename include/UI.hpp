@@ -1,33 +1,27 @@
 #ifndef UI_HPP
 #define UI_HPP
 
-#include <ncurses.h>
 #include <string>
-#include "Board.hpp"
-#include "Move.hpp"
 
 using std::string;
 
+class Board;
+
 class UI {
     public:
-    const string unicode_piece_characters[7] = { " ", "♟︎", "♞", "♝", "♜", "♛", "♚"};
-    const string alt_unicode_piece_characters[7] = { " ", "♙", "♘", "♗", "♖", "♕", "♔"};
+    static string unicode_piece_characters[7];
+    static string alt_unicode_piece_characters[7];
+    static string foreground_colors[2];
+    static string background_colors[2];
+    static string default_color;
+    static string warning_color;
 
-    WINDOW* board_window;
-    WINDOW* gamestate_window;
-    WINDOW* prompt_window;
-    int width, height;
-    bool display_to_white;
+    static bool display_to_white;
 
-    string recorded_input;
-
-    UI();
-    void show_board(Board b);
-    void show_gamesate(Board b);
-    void show_move(Move m, Board b);
-    int get_square_color(int index, int piece);
-    int get_square_color(int index);
-    int get_char();
+    static void show_board(Board b);
+    static void show_gamesate(Board b);
+    static string get_input();
+    static void warn(string warning);
 };
 
 #endif
