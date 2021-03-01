@@ -15,7 +15,7 @@ string UI::warning_color ="\e[0;30m\e[41m";
 bool UI::display_to_white = true;
 
 
-void UI::show_board(Board *b) {
+void UI::show_board(Board b) {
     // Set variables based on board display directions
     const string file_label = (display_to_white) ? "  a b c d e f g h   \n" : "  h g f e d c b a   \n";
     const int rank_start = (display_to_white) ? 8 : 1;
@@ -35,14 +35,13 @@ void UI::show_board(Board *b) {
         cout << rank << " ";
 
         for (char file = file_start; file != file_end; file += file_increment) {
-            piece = b->squares[b->index_of(file, rank)];
+            piece = b[file][rank];
 
-
-            string foreground = foreground_colors[b->get_piece_color(piece)];
+            string foreground = foreground_colors[b.get_piece_color(piece)];
             string background = background_colors[(rank + file) % 2];
 
             cout << foreground + background;
-            cout << unicode_piece_characters[b->get_piece_type(piece)] + " ";
+            cout << unicode_piece_characters[b.get_piece_type(piece)] + " ";
             cout << default_color;
         }
 
@@ -50,14 +49,14 @@ void UI::show_board(Board *b) {
         cout << rank << "\n";
     }
 
-    cout << file_label;
+    cout << file_label << "\n";
 }
 
-void UI::show_gamesate(Board *b) {
-    if (b->white_to_move) {
-        cout << "White to Move" << "\n";
+void UI::show_gamesate(Board b) {
+    if (b.white_to_move) {
+        cout << "White to Move" << "\n\n";
     } else {
-        cout << "Black to Move"  << "\n";
+        cout << "Black to Move"  << "\n\n";
     }
 }
 
@@ -69,5 +68,5 @@ string UI::get_input() {
 }
 
 void UI::warn(string warning) {
-    cout << warning_color << "\n" << warning << default_color << "\n";
+    cout << warning_color << "\n" << warning << default_color << "\n\n";
 }

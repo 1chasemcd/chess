@@ -3,11 +3,11 @@
 #include "../include/Move.hpp"
 #include "../include/Player.hpp"
 #include "../include/UI.hpp"
+#include <iostream>
 
 Game::Game(Player *w, Player *b) {
     white = w;
     black = b;
-    *board = Board();
 }
 
 void Game::go() {
@@ -16,14 +16,14 @@ void Game::go() {
 
     Move m;
 
-    if (board->white_to_move) {
+    if (board.white_to_move) {
         m = white->go(board);
 
     } else {
         m = black->go(board);
     }
 
-    board->exec_move(m);
+    board.exec_move(m);
     
     go();
 }

@@ -1,11 +1,17 @@
 #include "../include/Board.hpp"
 #include "../include/Pieces.hpp"
 #include "../include/Move.hpp"
+#include <iostream>
 
 Board::Board() {
-    for (int i = 0; i < 64; i++) {
-        squares[i] = 0;
+    for (int file = 0; file < 8; file++) {
+        squares.push_back({});
+
+        for (int rank = 0; rank <= 8; rank++) {
+            squares[file].push_back(0);
+        }
     }
+
 
     white_to_move = true;
     can_castle[0] = can_castle[1] = can_castle[2] = can_castle[3] = false;
@@ -16,8 +22,10 @@ Board::Board() {
 }
 
 void Board::exec_move(Move move) {
-    squares[move.to] = squares[move.from];
-    squares[move.from] = 0;
+    (*this)[move.to] = (*this)[move.from];
+    (*this)[move.from] = 0;
+
+    white_to_move = !white_to_move;
 }
 
 int Board::get_piece_type(int piece) {
@@ -26,10 +34,6 @@ int Board::get_piece_type(int piece) {
 
 int Board::get_piece_color(int piece) {
     return (piece >> 3);
-}
-
-int Board::index_of(char file, int rank) {
-    return (rank - 1) * 8 + tolower(file) - 'a';
 }
 
 void Board::set_from_fen(string fen_sequence) {
@@ -52,8 +56,10 @@ void Board::set_from_fen(string fen_sequence) {
     fen_character_values['k'] = Pieces::black | Pieces::king;
 
     // Clear the board to start
-    for (int i = 0; i < 64; i++) {
-        squares[i] = 0;
+    for (int file = 0; file < 8; file++) {
+        for (int rank = 1; rank <= 8; rank++) {
+            squares[file][rank] = 0;
+        }
     }
 
     // Variables to track index in board array
@@ -84,7 +90,7 @@ void Board::set_from_fen(string fen_sequence) {
 
         // Otherwise, character represents a square
         } else {
-            squares[index_of(file_index, rank_index)] = fen_character_values[fen_character];
+            (*this)[file_index][rank_index] = fen_character_values[fen_character];
 
             file_index += 1;
         }
@@ -143,8 +149,65 @@ void Board::set_from_fen(string fen_sequence) {
 
 vector<Move> Board::get_legal_moves() {
     vector<Move> legal_moves;
-    legal_moves.push_back(Move(0, 0));
 
+    for (char file = 'a'; file <= 'h'; file++) {
+        for (int rank = 1; rank <= 8; rank ++) {
+            if ((get_piece_color((*this)[file][rank]) == 1) == white_to_move) {
+                auto piece_moves = get_piece_moves(file, rank);
+
+                legal_moves.insert(legal_moves.end(), piece_moves.begin(), piece_moves.end());
+            }
+        }
+    }
 
     return legal_moves;
+}
+
+vector<Move> Board::get_piece_moves(const char file, const int rank) {
+    vector<Move> piece_moves;
+
+    int piece = (*this)[file][rank];
+    int piece_type = get_piece_type(piece);
+    int piece_color = get_piece_color(piece);
+
+    vector<vector<int>> dirs = directions[piece];
+
+    for (auto dir = dirs.begin(); dir != dirs.end(); dir++) {
+        for (int multiplier = 1; multiplier <= 8; multiplier++) {
+            char new_file = file + (*dir)[0] * multiplier;
+            int new_rank = rank + (*dir)[1] * multiplier;
+
+            if (new_file > 'h' || new_file < 'a' || new_rank > 8 || new_rank < 1) {
+                break;
+            }
+
+            int new_piece = (*this)[new_file][new_rank];
+
+            if (new_piece == 0) {
+                piece_moves.push_back(Move(file, rank, new_file, new_rank));
+
+            } else if (get_piece_color(new_piece) != piece_color) {
+                piece_moves.push_back(Move(file, rank, new_file, new_rank));
+                break;
+
+            } else if (get_piece_color(new_piece) == piece_color) {
+                break;
+            }
+            
+            // Only iterate multiplier loop once for pieces that can't travel long lines
+            if (piece_type == king || piece_type == knight || piece_type == pawn) {
+                break;
+            }
+        }
+    }
+
+    return piece_moves;
+}
+
+int& Board::operator[](string index) {
+    return squares[index.at(0) - 'a'][index.at(1) - '0'];
+}
+
+vector<int>& Board::operator[](char index) {
+    return squares[index - 'a'];
 }

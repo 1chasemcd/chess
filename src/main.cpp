@@ -24,6 +24,7 @@ int main() {
     Human black = Human();
 
     Game game = Game(&white, &black);
+
     game.go();
 }
 

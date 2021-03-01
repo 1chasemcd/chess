@@ -9,16 +9,17 @@ using std::string;
 
 class Move {
     public:
-    int from, to;
+    string from, to;
     bool castling;
     bool is_valid;
 
     Move();
     Move(string move_str);
-    Move(int f, int t);
+    Move(string f, string t);
+    Move(char ff, int fr, char tf, int tr);
     Move(int castling_id);
     bool operator==(const Move & rhs);
-    bool is_legal_move_on_board(Board *b);
+    bool is_legal_move_on_board(Board b);
 
     private:
     

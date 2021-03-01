@@ -18,7 +18,7 @@ INCLUDEFLAGS :=
 TARGET := main
 
 # Test name
-TESTTARGET := uitest
+TESTTARGET := boardtest
 
 # Directories
 #   Headers

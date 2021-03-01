@@ -7,7 +7,7 @@ class Board;
 
 class Human: public Player {
     public:
-    Move go(Board *b);
+    Move go(Board b);
 };
 
 #endif

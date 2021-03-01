@@ -5,7 +5,7 @@
 
 using std::string;
 
-Move Human::go(Board *b) {
+Move Human::go(Board b) {
     string input = UI::get_input();
 
     Move move = Move(input);
