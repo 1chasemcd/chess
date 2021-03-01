@@ -15,7 +15,7 @@ LIBFLAGS :=
 INCLUDEFLAGS :=
 
 # Program name
-TARGET := main
+TARGET := chess
 
 # Test name
 TESTTARGET := boardtest
