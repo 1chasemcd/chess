@@ -18,7 +18,8 @@ public:
     // Castling ability organized by white kingside, white queenside, black kingside, black queenside
     bool can_castle[4];
     int half_move_clock;
-    int en_passant_target;
+    int move_counter;
+    string en_passant_target;
 
     Board();
 

@@ -1,7 +1,6 @@
 #include "../include/Game.hpp"
 #include "../include/Human.hpp"
 #include "../include/Board.hpp"
-#include "../include/UI.hpp"
 #include <iostream>
 
 const char *chess_ascii = R"(

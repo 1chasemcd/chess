@@ -1,7 +1,6 @@
 #include "../include/Board.hpp"
-#include "../include/Pieces.hpp"
+#include "../include/helpers.hpp"
 #include "../include/Move.hpp"
-#include <iostream>
 
 Board::Board() {
     for (int file = 0; file < 8; file++) {
@@ -14,16 +13,100 @@ Board::Board() {
 
 
     white_to_move = true;
-    can_castle[0] = can_castle[1] = can_castle[2] = can_castle[3] = false;
+    can_castle[0] = can_castle[1] = can_castle[2] = can_castle[3] = true;
     half_move_clock = 0;
-    en_passant_target = -1;
+    en_passant_target = "";
 
     set_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 }
 
 void Board::exec_move(Move move) {
-    (*this)[move.to] = (*this)[move.from];
-    (*this)[move.from] = 0;
+
+    // Move pieces depending on move type
+
+    if (move.to == en_passant_target && get_piece_type((*this)[move.from]) == Piece::pawn) {
+        (*this)[en_passant_target] = (*this)[move.from];
+        (*this)[move.from] = 0;
+
+        char en_passant_kill_file = en_passant_target.at(0);
+        int en_passant_kill_rank = en_passant_target.at(1) == '3' ? 4 : 5;
+
+        (*this)[en_passant_kill_file][en_passant_kill_rank] = 0;
+
+    } else if (move.type == MoveType::normal) {
+        (*this)[move.to] = (*this)[move.from];
+        (*this)[move.from] = 0;
+
+    } else if (move.type == MoveType::castle_kingside && white_to_move) {
+        (*this)["g1"] = Piece::white | Piece::king;
+        (*this)["f1"] = Piece::white | Piece::rook;
+        (*this)["h1"] = 0;
+        (*this)["e1"] = 0;
+
+    } else if (move.type == MoveType::castle_queenside && white_to_move) {
+        (*this)["c1"] = Piece::white | Piece::king;
+        (*this)["d1"] = Piece::white | Piece::rook;
+        (*this)["a1"] = 0;
+        (*this)["e1"] = 0;
+
+    } else if (move.type == MoveType::castle_kingside && !white_to_move) {
+        (*this)["g8"] = Piece::black | Piece::king;
+        (*this)["f8"] = Piece::black | Piece::rook;
+        (*this)["h8"] = 0;
+        (*this)["e8"] = 0;
+
+    } else if (move.type == MoveType::castle_queenside && !white_to_move) {
+        (*this)["c8"] = Piece::black | Piece::king;
+        (*this)["d8"] = Piece::black | Piece::rook;
+        (*this)["a8"] = 0;
+        (*this)["e8"] = 0;
+    }
+    
+
+    // remove castling abilities if kings moved
+    if (move.from == "e1") {
+        can_castle[0] = can_castle[1] = false;
+    } else if (move.from == "e8") {
+        can_castle[2] = can_castle[3] = false;
+    
+    // Remove castling abilities if rooks moved or captured
+    } else if (move.from == "a1" || move.to == "a1") {
+        can_castle[1] = false;
+    } else if (move.from == "h1" || move.to == "h1") {
+        can_castle[0] = false;
+    } else if (move.from == "a8" || move.from == "a8") {
+        can_castle[3] = false;
+    } else if (move.from == "h8" || move.from == "h8") {
+        can_castle[2] = false;
+    }
+
+    // Set en passant target if pawn makes double move
+
+    en_passant_target = "";
+
+    if (get_piece_type((*this)[move.to]) == Piece::pawn ) {
+        if (move.from.at(1) == '2' && move.to.at(1) == '4') {
+            en_passant_target = move.from.at(0);
+            en_passant_target.push_back('3');
+
+        } else if (move.from.at(1) == '7' && move.to.at(1) == '5') {
+            en_passant_target = move.from.at(0);
+            en_passant_target.push_back('6');
+
+        }
+    }
+
+    // Promote pawn
+    if ((*this)[move.to] == (Piece::white | Piece::pawn) && move.to.at(1) == '8') {
+        (*this)[move.to] = Piece::white | Piece::queen;
+
+    } else if ((*this)[move.to] == (Piece::black | Piece::pawn) && move.to.at(1) == '1') {
+        (*this)[move.to] = Piece::black | Piece::queen;
+    }
+
+    if (!white_to_move) {
+        move_counter++;
+    }
 
     white_to_move = !white_to_move;
 }
@@ -42,18 +125,18 @@ void Board::set_from_fen(string fen_sequence) {
     int fen_character_values[256] = { 0 };
 
     // Assign character indicies to integer values in notation characters list
-    fen_character_values['P'] = Pieces::white | Pieces::pawn;
-    fen_character_values['p'] = Pieces::black | Pieces::pawn;
-    fen_character_values['N'] = Pieces::white | Pieces::knight;
-    fen_character_values['n'] = Pieces::black | Pieces::knight;
-    fen_character_values['B'] = Pieces::white | Pieces::bishop;
-    fen_character_values['b'] = Pieces::black | Pieces::bishop;
-    fen_character_values['R'] = Pieces::white | Pieces::rook;
-    fen_character_values['r'] = Pieces::black | Pieces::rook;
-    fen_character_values['Q'] = Pieces::white | Pieces::queen;
-    fen_character_values['q'] = Pieces::black | Pieces::queen;
-    fen_character_values['K'] = Pieces::white | Pieces::king;
-    fen_character_values['k'] = Pieces::black | Pieces::king;
+    fen_character_values['P'] = Piece::white | Piece::pawn;
+    fen_character_values['p'] = Piece::black | Piece::pawn;
+    fen_character_values['N'] = Piece::white | Piece::knight;
+    fen_character_values['n'] = Piece::black | Piece::knight;
+    fen_character_values['B'] = Piece::white | Piece::bishop;
+    fen_character_values['b'] = Piece::black | Piece::bishop;
+    fen_character_values['R'] = Piece::white | Piece::rook;
+    fen_character_values['r'] = Piece::black | Piece::rook;
+    fen_character_values['Q'] = Piece::white | Piece::queen;
+    fen_character_values['q'] = Piece::black | Piece::queen;
+    fen_character_values['K'] = Piece::white | Piece::king;
+    fen_character_values['k'] = Piece::black | Piece::king;
 
     // Clear the board to start
     for (int file = 0; file < 8; file++) {
@@ -67,10 +150,10 @@ void Board::set_from_fen(string fen_sequence) {
     int rank_index = 8;
 
     // Variable to keep track of position in fen_sequence string
-    int fen_index;
+    long unsigned int fen_index;
 
     // Loop through the first part of the fen_string: board positions
-    for (fen_index = 0; fen_index < fen_sequence.length(); fen_index++) {
+    for (fen_index = 0; fen_index < fen_sequence.size(); fen_index++) {
         char fen_character = fen_sequence.at(fen_index);
 
         // Board is fully filled after first space is reached
@@ -90,7 +173,7 @@ void Board::set_from_fen(string fen_sequence) {
 
         // Otherwise, character represents a square
         } else {
-            (*this)[file_index][rank_index] = fen_character_values[fen_character];
+            (*this)[file_index][rank_index] = fen_character_values[int(fen_character)];
 
             file_index += 1;
         }
@@ -105,7 +188,7 @@ void Board::set_from_fen(string fen_sequence) {
     // Set all castling abilities to false
     can_castle[0] = can_castle[1] = can_castle[2] = can_castle[3] = false;
 
-    for (fen_index = fen_index; fen_index < fen_sequence.length(); fen_index++) {
+    for (fen_index = fen_index; fen_index < fen_sequence.size(); fen_index++) {
         char fen_character = fen_sequence.at(fen_index);
 
         // Castling ability section over if space is reached
@@ -133,17 +216,35 @@ void Board::set_from_fen(string fen_sequence) {
 
     // Fourth part of fen string: En passant target square
     if (fen_sequence.at(fen_index) == '-') {
-        en_passant_target = -1;
+        en_passant_target = "";
         fen_index += 2;
 
     } else {
-        // Implement later
+        en_passant_target = fen_sequence.substr(fen_index, 2);
         fen_index += 3;
     }
 
     // Fifth part of fen string: half move counter
-    // Implement later
-    half_move_clock = 0;
+    string num_string = "";
+
+    for (fen_index = fen_index; fen_index < fen_sequence.size(); fen_index++) {
+        if (fen_sequence.at(fen_index) != ' ') {
+            num_string += fen_sequence.at(fen_index);
+        } else {
+            fen_index++;
+            break;
+        }
+    }
+
+    half_move_clock = stoi(num_string);
+
+    // Final part of fen string: full move counter
+    num_string = "";
+    for (fen_index = fen_index; fen_index < fen_sequence.size(); fen_index++) {
+        num_string += fen_sequence.at(fen_index);
+    }
+
+    move_counter = stoi(num_string);
 
 }
 
@@ -158,6 +259,24 @@ vector<Move> Board::get_legal_moves() {
                 legal_moves.insert(legal_moves.end(), piece_moves.begin(), piece_moves.end());
             }
         }
+    }
+
+    // Add castling abilities to move list
+    // TODO: Prevent castling when in or through check
+    if (can_castle[0] && white_to_move && (*this)["f1"] == 0 && (*this)["g1"] == 0) {
+        legal_moves.push_back(Move(MoveType::castle_kingside));
+    }
+
+    if (can_castle[1] && white_to_move && (*this)["b1"] == 0 && (*this)["c1"] == 0 && (*this)["d1"] == 0) {
+        legal_moves.push_back(Move(MoveType::castle_queenside));
+    }
+
+    if (can_castle[2] && !white_to_move && (*this)["f8"] == 0 && (*this)["g8"] == 0) {
+        legal_moves.push_back(Move(MoveType::castle_kingside));
+    }
+
+    if (can_castle[3] && !white_to_move && (*this)["b8"] == 0 && (*this)["c8"] == 0 && (*this)["d8"] == 0) {
+        legal_moves.push_back(Move(MoveType::castle_queenside));
     }
 
     return legal_moves;
@@ -177,25 +296,57 @@ vector<Move> Board::get_piece_moves(const char file, const int rank) {
             char new_file = file + (*dir)[0] * multiplier;
             int new_rank = rank + (*dir)[1] * multiplier;
 
+            // Stop if piece moves of board
             if (new_file > 'h' || new_file < 'a' || new_rank > 8 || new_rank < 1) {
                 break;
             }
 
             int new_piece = (*this)[new_file][new_rank];
 
+            // Deal with move exceptions for pawn
+            if (piece_type == Piece::pawn) {
+
+                // Only allow white piece to double move if its rank is 2
+                if ((*dir)[1] == 2 && rank != 2) {
+                    break;
+                
+                // Only allow black piece to double move if its rank is 7
+                } else if ((*dir)[1] == -2 && rank != 7) {
+                    break;
+                }
+
+                // Don't allow pawn to capture on forward (aka not sideways) move
+                if ((*dir)[0] == 0 && new_piece != none) {
+                    break;
+                
+                // Don't allow diagonal move if not capturing or en passanting
+                } else if ((*dir)[0] != 0 && new_piece == none) {
+                    string new_pos = "";
+                    new_pos.push_back(new_file);
+                    new_pos += std::to_string(new_rank);
+
+                    if (new_pos != en_passant_target) {
+                        break;
+                    }
+                }
+            }
+
+            // Record move and continue if piece moves to empty space
             if (new_piece == 0) {
                 piece_moves.push_back(Move(file, rank, new_file, new_rank));
 
+            // Record move and continue if piece moves to space occupied by other color
             } else if (get_piece_color(new_piece) != piece_color) {
                 piece_moves.push_back(Move(file, rank, new_file, new_rank));
                 break;
 
+            // Don't record move if piece moves onto same color
             } else if (get_piece_color(new_piece) == piece_color) {
                 break;
             }
             
             // Only iterate multiplier loop once for pieces that can't travel long lines
-            if (piece_type == king || piece_type == knight || piece_type == pawn) {
+            if (piece_type == Piece::king || piece_type == Piece::knight || piece_type == Piece::pawn) {
                 break;
             }
         }

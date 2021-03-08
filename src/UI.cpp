@@ -1,4 +1,5 @@
 #include <iostream>
+#include <locale>
 #include "../include/UI.hpp"
 #include "../include/Board.hpp"
 
@@ -63,8 +64,13 @@ void UI::show_gamesate(Board b) {
 string UI::get_input() {
     cout << "> ";
     string input;
+    string lower_input = "";
     cin >> input;
-    return input;
+
+    for (char c : input) {
+        lower_input += std::tolower(c);
+    }
+    return lower_input;
 }
 
 void UI::warn(string warning) {
