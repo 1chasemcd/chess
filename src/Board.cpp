@@ -1,3 +1,5 @@
+#include <regex>
+
 #include "../include/Board.hpp"
 #include "../include/helpers.hpp"
 #include "../include/Move.hpp"
@@ -24,84 +26,92 @@ void Board::exec_move(Move move) {
 
     // Move pieces depending on move type
 
-    if (move.to == en_passant_target && get_piece_type((*this)[move.from]) == Piece::pawn) {
-        (*this)[en_passant_target] = (*this)[move.from];
-        (*this)[move.from] = 0;
+    if (move.type == MoveType::normal) {
+        if (move.to == en_passant_target && get_piece_type((*this)[move.from]) == Piece::pawn) {
+            (*this)[en_passant_target] = (*this)[move.from];
+            (*this)[move.from] = 0;
 
-        char en_passant_kill_file = en_passant_target.at(0);
-        int en_passant_kill_rank = en_passant_target.at(1) == '3' ? 4 : 5;
+            char en_passant_kill_file = en_passant_target.at(0);
+            int en_passant_kill_rank = en_passant_target.at(1) == '3' ? 4 : 5;
 
-        (*this)[en_passant_kill_file][en_passant_kill_rank] = 0;
+            (*this)[en_passant_kill_file][en_passant_kill_rank] = 0;
 
-    } else if (move.type == MoveType::normal) {
-        (*this)[move.to] = (*this)[move.from];
-        (*this)[move.from] = 0;
+        } else {
+            (*this)[move.to] = (*this)[move.from];
+            (*this)[move.from] = 0;
+        }
 
-    } else if (move.type == MoveType::castle_kingside && white_to_move) {
-        (*this)["g1"] = Piece::white | Piece::king;
-        (*this)["f1"] = Piece::white | Piece::rook;
-        (*this)["h1"] = 0;
-        (*this)["e1"] = 0;
+            // remove castling abilities if kings moved
+        if (move.from == "e1") {
+            can_castle[0] = can_castle[1] = false;
+        } else if (move.from == "e8") {
+            can_castle[2] = can_castle[3] = false;
+        
+        // Remove castling abilities if rooks moved or captured
+        } else if (move.from == "a1" || move.to == "a1") {
+            can_castle[1] = false;
+        } else if (move.from == "h1" || move.to == "h1") {
+            can_castle[0] = false;
+        } else if (move.from == "a8" || move.from == "a8") {
+            can_castle[3] = false;
+        } else if (move.from == "h8" || move.from == "h8") {
+            can_castle[2] = false;
+        }
 
-    } else if (move.type == MoveType::castle_queenside && white_to_move) {
-        (*this)["c1"] = Piece::white | Piece::king;
-        (*this)["d1"] = Piece::white | Piece::rook;
-        (*this)["a1"] = 0;
-        (*this)["e1"] = 0;
+        // Set en passant target if pawn makes double move
 
-    } else if (move.type == MoveType::castle_kingside && !white_to_move) {
-        (*this)["g8"] = Piece::black | Piece::king;
-        (*this)["f8"] = Piece::black | Piece::rook;
-        (*this)["h8"] = 0;
-        (*this)["e8"] = 0;
+        en_passant_target = "";
 
-    } else if (move.type == MoveType::castle_queenside && !white_to_move) {
-        (*this)["c8"] = Piece::black | Piece::king;
-        (*this)["d8"] = Piece::black | Piece::rook;
-        (*this)["a8"] = 0;
-        (*this)["e8"] = 0;
-    }
-    
+        if (get_piece_type((*this)[move.to]) == Piece::pawn ) {
+            if (move.from.at(1) == '2' && move.to.at(1) == '4') {
+                en_passant_target = move.from.at(0);
+                en_passant_target.push_back('3');
 
-    // remove castling abilities if kings moved
-    if (move.from == "e1") {
-        can_castle[0] = can_castle[1] = false;
-    } else if (move.from == "e8") {
-        can_castle[2] = can_castle[3] = false;
-    
-    // Remove castling abilities if rooks moved or captured
-    } else if (move.from == "a1" || move.to == "a1") {
-        can_castle[1] = false;
-    } else if (move.from == "h1" || move.to == "h1") {
-        can_castle[0] = false;
-    } else if (move.from == "a8" || move.from == "a8") {
-        can_castle[3] = false;
-    } else if (move.from == "h8" || move.from == "h8") {
-        can_castle[2] = false;
-    }
+            } else if (move.from.at(1) == '7' && move.to.at(1) == '5') {
+                en_passant_target = move.from.at(0);
+                en_passant_target.push_back('6');
 
-    // Set en passant target if pawn makes double move
+            }
+        }
 
-    en_passant_target = "";
+        // Promote pawn
+        if ((*this)[move.to] == (Piece::white | Piece::pawn) && move.to.at(1) == '8') {
+            (*this)[move.to] = Piece::white | Piece::queen;
 
-    if (get_piece_type((*this)[move.to]) == Piece::pawn ) {
-        if (move.from.at(1) == '2' && move.to.at(1) == '4') {
-            en_passant_target = move.from.at(0);
-            en_passant_target.push_back('3');
+        } else if ((*this)[move.to] == (Piece::black | Piece::pawn) && move.to.at(1) == '1') {
+            (*this)[move.to] = Piece::black | Piece::queen;
+        }
 
-        } else if (move.from.at(1) == '7' && move.to.at(1) == '5') {
-            en_passant_target = move.from.at(0);
-            en_passant_target.push_back('6');
+    } else {
+        if (move.type == MoveType::castle_kingside && white_to_move) {
+            (*this)["g1"] = Piece::white | Piece::king;
+            (*this)["f1"] = Piece::white | Piece::rook;
+            (*this)["h1"] = 0;
+            (*this)["e1"] = 0;
+            can_castle[0] = can_castle[1] = false;
+
+        } else if (move.type == MoveType::castle_queenside && white_to_move) {
+            (*this)["c1"] = Piece::white | Piece::king;
+            (*this)["d1"] = Piece::white | Piece::rook;
+            (*this)["a1"] = 0;
+            (*this)["e1"] = 0;
+            can_castle[0] = can_castle[1] = false;
+
+        } else if (move.type == MoveType::castle_kingside && !white_to_move) {
+            (*this)["g8"] = Piece::black | Piece::king;
+            (*this)["f8"] = Piece::black | Piece::rook;
+            (*this)["h8"] = 0;
+            (*this)["e8"] = 0;
+            can_castle[2] = can_castle[3] = false;
+
+        } else if (move.type == MoveType::castle_queenside && !white_to_move) {
+            (*this)["c8"] = Piece::black | Piece::king;
+            (*this)["d8"] = Piece::black | Piece::rook;
+            (*this)["a8"] = 0;
+            (*this)["e8"] = 0;
+            can_castle[2] = can_castle[3] = false;
 
         }
-    }
-
-    // Promote pawn
-    if ((*this)[move.to] == (Piece::white | Piece::pawn) && move.to.at(1) == '8') {
-        (*this)[move.to] = Piece::white | Piece::queen;
-
-    } else if ((*this)[move.to] == (Piece::black | Piece::pawn) && move.to.at(1) == '1') {
-        (*this)[move.to] = Piece::black | Piece::queen;
     }
 
     if (!white_to_move) {
@@ -356,9 +366,43 @@ vector<Move> Board::get_piece_moves(const char file, const int rank) {
 }
 
 int& Board::operator[](string index) {
-    return squares[index.at(0) - 'a'][index.at(1) - '0'];
+    if (is_valid_board_index(index)) {
+        return squares[index.at(0) - 'a'][index.at(1) - '0'];
+
+    } else {
+        int i = -1;
+        return i;
+    }
 }
 
 vector<int>& Board::operator[](char index) {
-    return squares[index - 'a'];
+    if (index - 'a' >= 0 && index - 'a' < 8) {
+        return squares[index - 'a'];
+    } else {
+        vector<int> v = {0, 0, 0, 0, 0, 0, 0, 0};
+        return v;
+    }
+    
+}
+
+bool Board::is_valid_board_index(string index) {
+    string str_template = "[a-hA-H][1-8]";
+    return regex_match(index, std::regex(str_template));
+}
+
+Board Board::copy() {
+    Board b = Board();
+    b.squares = this->squares;
+    b.white_to_move = this->white_to_move;
+
+    b.can_castle[0] = this->can_castle[0];
+    b.can_castle[1] = this->can_castle[1];
+    b.can_castle[2] = this->can_castle[2];
+    b.can_castle[3] = this->can_castle[3];
+
+    b.half_move_clock = this->half_move_clock;
+    b.move_counter = this->move_counter;
+    b.en_passant_target = this->en_passant_target;
+
+    return b;
 }

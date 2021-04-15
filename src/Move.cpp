@@ -13,6 +13,7 @@ Move::Move() {
 
 Move::Move(string move_string) {
     if (move_string == "o-o") {
+        
         to = "";
         from = "";
         type = MoveType::castle_kingside;

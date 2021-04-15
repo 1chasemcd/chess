@@ -24,6 +24,7 @@ public:
     Board();
 
     void exec_move(Move move);
+
     int get_piece_type(int piece);
     int get_piece_color(int piece);
 
@@ -33,6 +34,8 @@ public:
 
     int& operator[](string index);
     vector<int>& operator[](char index);
+    Board copy();
+    bool is_valid_board_index(string index);
 };
 
 #endif

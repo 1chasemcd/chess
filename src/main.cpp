@@ -1,5 +1,6 @@
 #include "../include/Game.hpp"
 #include "../include/Human.hpp"
+#include "../include/AI.hpp"
 #include "../include/Board.hpp"
 #include <iostream>
 
@@ -20,7 +21,7 @@ int main() {
                  "for kingside castling and O-O-O for queenside castling.\n\nLet's Begin!\n\n";
 
     Human white = Human();
-    Human black = Human();
+    AI black = AI();
 
     Game game = Game(&white, &black);
 

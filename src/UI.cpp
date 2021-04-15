@@ -65,6 +65,7 @@ string UI::get_input() {
     cout << "> ";
     string input;
     string lower_input = "";
+
     cin >> input;
 
     for (char c : input) {
