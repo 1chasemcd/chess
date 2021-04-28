@@ -9,7 +9,7 @@ class AI: public Player {
     Move get_best_move(Board b, int recursion_depth);
     int score_board(Board b);
     int get_pos_value(int piece, char file, int rank);
-    int get_best_score(Board b, int depth);
+    int get_best_score(Board b, int depth, bool maximizing);
 };
 
 #endif
