@@ -10,7 +10,7 @@ using std::min;
 using std::string;
 
 Move AI::go(Board b) {
-    return get_best_move(b, 3);
+    return get_best_move(b, 2);
 }
 
 Move AI::get_best_move(Board b, int recursion_depth) {

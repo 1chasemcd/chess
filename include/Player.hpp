@@ -6,7 +6,6 @@ class Board;
 
 class Player {
     public:
-    int color;
     virtual Move go(Board b) = 0;
 };
 

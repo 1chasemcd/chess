@@ -14,6 +14,18 @@ void Game::go() {
     UI::show_board(board);
     UI::show_gamesate(board);
 
+    Board mate_test_board = board.copy();
+    mate_test_board.white_to_move = !mate_test_board.white_to_move;
+
+    if (board.white_to_move && mate_test_board.in_check(Piece::white)) {
+        UI::warn("white is in checkmate and looses! Game over!");
+        return;
+
+    } else if (!board.white_to_move && mate_test_board.in_check(Piece::black)) {
+        UI::warn("black is in checkmate and looses! Game over!");
+        return;
+    }
+
     Move m;
 
     if (board.white_to_move) {

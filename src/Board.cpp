@@ -1,4 +1,5 @@
 #include <regex>
+#include <iostream>
 
 #include "../include/Board.hpp"
 #include "../include/helpers.hpp"
@@ -20,6 +21,7 @@ Board::Board() {
     en_passant_target = "";
 
     set_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
 }
 
 void Board::exec_move(Move move) {
@@ -258,7 +260,29 @@ void Board::set_from_fen(string fen_sequence) {
 
 }
 
-vector<Move> Board::get_legal_moves() {
+bool Board::in_check(int color) {
+    string king_pos;
+
+    for (char file = 'a'; file <= 'h'; file++) {
+        for (int rank = 1; rank <= 8; rank++) {
+            if ((*this)[file][rank] == (color | Piece::king)) {
+                king_pos = file + std::to_string(rank);
+                break;
+            }
+        }
+    }
+
+    auto moves = this->get_legal_moves(false);
+
+    for (auto move = moves.begin(); move != moves.end(); move++) {
+        if ((*move).to == king_pos) {
+            return true;
+        }
+    }
+    return false;
+}
+
+vector<Move> Board::get_legal_moves(bool check_test) {
     vector<Move> legal_moves;
 
     for (char file = 'a'; file <= 'h'; file++) {
@@ -267,6 +291,19 @@ vector<Move> Board::get_legal_moves() {
                 auto piece_moves = get_piece_moves(file, rank);
 
                 legal_moves.insert(legal_moves.end(), piece_moves.begin(), piece_moves.end());
+            }
+        }
+    }
+
+    if (check_test) {
+        for (auto move = legal_moves.begin(); move != legal_moves.end(); move++) {
+            Board check_test_board = this->copy();
+            check_test_board.exec_move(*move);
+
+            int piece_color = white_to_move ? Piece::white : Piece::black;
+            
+            if (check_test_board.in_check(piece_color)) {
+                legal_moves.erase(move);
             }
         }
     }
@@ -341,13 +378,15 @@ vector<Move> Board::get_piece_moves(const char file, const int rank) {
                 }
             }
 
+            Move move = Move(file, rank, new_file, new_rank);
+
             // Record move and continue if piece moves to empty space
             if (new_piece == 0) {
-                piece_moves.push_back(Move(file, rank, new_file, new_rank));
+                piece_moves.push_back(move);
 
             // Record move and continue if piece moves to space occupied by other color
             } else if (get_piece_color(new_piece) != piece_color) {
-                piece_moves.push_back(Move(file, rank, new_file, new_rank));
+                piece_moves.push_back(move);
                 break;
 
             // Don't record move if piece moves onto same color

@@ -10,9 +10,13 @@ Move Human::go(Board b) {
 
     Move move = Move(input);
 
-    if (move.is_valid() && move.is_legal_move_on_board(b)) {
-
+    if (move.is_valid() && move.is_legal_on_board(b)) {
         return move;
+    
+    } else if (move.is_valid() && move.is_legal_no_check_on_board(b)) {
+        UI::warn("error: cannot end move in check!");
+
+        return go(b);
 
     } else if (move.is_valid()) {
         UI::warn("error: illegal move!");

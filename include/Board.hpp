@@ -29,7 +29,9 @@ public:
     int get_piece_color(int piece);
 
     void set_from_fen(string fen_sequence);
-    vector<Move> get_legal_moves();
+
+    bool in_check(int color);
+    vector<Move> get_legal_moves(bool check_test = true);
     vector<Move> get_piece_moves(const char file, const int rank);
 
     int& operator[](string index);

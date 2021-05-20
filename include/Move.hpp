@@ -18,7 +18,8 @@ class Move {
     Move(string f, string t);
     Move(char ff, int fr, char tf, int tr);
     Move(MoveType mt);
-    bool is_legal_move_on_board(Board b);
+    bool is_legal_no_check_on_board(Board b);
+    bool is_legal_on_board(Board b);
     bool is_valid();
 
     private:

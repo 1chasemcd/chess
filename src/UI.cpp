@@ -1,5 +1,6 @@
 #include <iostream>
 #include <locale>
+#include "../include/helpers.hpp"
 #include "../include/UI.hpp"
 #include "../include/Board.hpp"
 
@@ -55,10 +56,21 @@ void UI::show_board(Board b) {
 
 void UI::show_gamesate(Board b) {
     if (b.white_to_move) {
-        cout << "White to Move" << "\n\n";
+        cout << "White to Move\n";
+
     } else {
-        cout << "Black to Move"  << "\n\n";
+        cout << "Black to Move\n";
     }
+
+
+    Board check_test_board = b.copy();
+    check_test_board.white_to_move = !check_test_board.white_to_move;
+
+    if (check_test_board.in_check(Piece::white) || check_test_board.in_check(Piece::black)) {
+        UI::warn("You're in Check!");
+    }
+
+    cout << "\n";
 }
 
 string UI::get_input() {
