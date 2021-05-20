@@ -6,6 +6,7 @@
 #include "../include/Move.hpp"
 
 Board::Board() {
+    // Initialize board variables
     for (int file = 0; file < 8; file++) {
         squares.push_back({});
 
@@ -27,8 +28,8 @@ Board::Board() {
 void Board::exec_move(Move move) {
 
     // Move pieces depending on move type
-
     if (move.type == MoveType::normal) {
+        // Special moving case for en_passant. Move pawn to the en passant target, then remove pawn that has been captured
         if (move.to == en_passant_target && get_piece_type((*this)[move.from]) == Piece::pawn) {
             (*this)[en_passant_target] = (*this)[move.from];
             (*this)[move.from] = 0;
@@ -39,11 +40,12 @@ void Board::exec_move(Move move) {
             (*this)[en_passant_kill_file][en_passant_kill_rank] = 0;
 
         } else {
+            // Regular move. Move "from" to "to", and remove piece from "from"
             (*this)[move.to] = (*this)[move.from];
             (*this)[move.from] = 0;
         }
 
-            // remove castling abilities if kings moved
+        // remove castling abilities if kings moved
         if (move.from == "e1") {
             can_castle[0] = can_castle[1] = false;
         } else if (move.from == "e8") {
@@ -61,7 +63,6 @@ void Board::exec_move(Move move) {
         }
 
         // Set en passant target if pawn makes double move
-
         en_passant_target = "";
 
         if (get_piece_type((*this)[move.to]) == Piece::pawn ) {
@@ -84,7 +85,10 @@ void Board::exec_move(Move move) {
             (*this)[move.to] = Piece::black | Piece::queen;
         }
 
+    // Moves for non-normal type move
     } else {
+
+        // Handle castling moves
         if (move.type == MoveType::castle_kingside && white_to_move) {
             (*this)["g1"] = Piece::white | Piece::king;
             (*this)["f1"] = Piece::white | Piece::rook;
@@ -116,13 +120,16 @@ void Board::exec_move(Move move) {
         }
     }
 
+    // Increment move counter
     if (!white_to_move) {
         move_counter++;
     }
 
+    // Switch player to move
     white_to_move = !white_to_move;
 }
 
+// Helper functions to identify piece color and type from piece integer
 int Board::get_piece_type(int piece) {
     return piece - (piece >> 3 << 3);
 }
@@ -131,6 +138,7 @@ int Board::get_piece_color(int piece) {
     return (piece >> 3);
 }
 
+// Function to set the board from Forsyth Edwards Notation
 void Board::set_from_fen(string fen_sequence) {
 
     // Array to keep track of fen characters and their corresponding integer values 
@@ -260,7 +268,10 @@ void Board::set_from_fen(string fen_sequence) {
 
 }
 
+// Method to check if a certain color is in check based on which player is moving next
 bool Board::in_check(int color) {
+
+    // Find position of the king
     string king_pos;
 
     for (char file = 'a'; file <= 'h'; file++) {
@@ -272,8 +283,11 @@ bool Board::in_check(int color) {
         }
     }
 
+    // Get all possible moves for the next player(including moves into check, since if the player could capture the king,
+    // leaving their own king in check would be okay. This also prevents an infinite recursion loop)
     auto moves = this->get_legal_moves(false);
 
+    // If any of these moves result in capture of king, then a player is in check
     for (auto move = moves.begin(); move != moves.end(); move++) {
         if ((*move).to == king_pos) {
             return true;
@@ -282,34 +296,44 @@ bool Board::in_check(int color) {
     return false;
 }
 
+// Method to get all legal moves. If checktest is true (default), then this method won't return moves that leave a player in check
 vector<Move> Board::get_legal_moves(bool check_test) {
     vector<Move> legal_moves;
 
+    // Loop through all pieces
     for (char file = 'a'; file <= 'h'; file++) {
         for (int rank = 1; rank <= 8; rank ++) {
+            // Only test pieces of moving color
             if ((get_piece_color((*this)[file][rank]) == 1) == white_to_move) {
+                // Get all possible moves that could be made by a piece
                 auto piece_moves = get_piece_moves(file, rank);
 
+                // Put these moves in a vector
                 legal_moves.insert(legal_moves.end(), piece_moves.begin(), piece_moves.end());
             }
         }
     }
 
+    // Remove moves that end in check if required
     if (check_test) {
-        for (auto move = legal_moves.begin(); move != legal_moves.end(); move++) {
+        // Loop through all generated moves
+        for (int i = legal_moves.size() - 1; i >= 0; i--) {
+            // Simulate making each move
             Board check_test_board = this->copy();
-            check_test_board.exec_move(*move);
+            check_test_board.exec_move(legal_moves[i]);
 
             int piece_color = white_to_move ? Piece::white : Piece::black;
             
+            // See if making this move leaves the king at risk. If so, remove this move from the vector
             if (check_test_board.in_check(piece_color)) {
-                legal_moves.erase(move);
+                legal_moves.pop_back();
             }
         }
     }
 
     // Add castling abilities to move list
     // TODO: Prevent castling when in or through check
+    // Add castling moves to list if applicable
     if (can_castle[0] && white_to_move && (*this)["f1"] == 0 && (*this)["g1"] == 0) {
         legal_moves.push_back(Move(MoveType::castle_kingside));
     }
@@ -328,10 +352,11 @@ vector<Move> Board::get_legal_moves(bool check_test) {
 
     return legal_moves;
 }
-
+// Method to get every possible move that could be made by a single piece
 vector<Move> Board::get_piece_moves(const char file, const int rank) {
     vector<Move> piece_moves;
 
+    // Generate some helpful info about the piece
     int piece = (*this)[file][rank];
     int piece_type = get_piece_type(piece);
     int piece_color = get_piece_color(piece);
@@ -404,6 +429,7 @@ vector<Move> Board::get_piece_moves(const char file, const int rank) {
     return piece_moves;
 }
 
+// Methods for quickly accessing board elements using square bracket notation
 int& Board::operator[](string index) {
     if (is_valid_board_index(index)) {
         return squares[index.at(0) - 'a'][index.at(1) - '0'];
@@ -429,6 +455,7 @@ bool Board::is_valid_board_index(string index) {
     return regex_match(index, std::regex(str_template));
 }
 
+// Method to copy the board for use in simulating moves
 Board Board::copy() {
     Board b = Board();
     b.squares = this->squares;

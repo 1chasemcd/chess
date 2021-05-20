@@ -10,22 +10,19 @@ Game::Game(Player *w, Player *b) {
     black = b;
 }
 
+// Recursive method to continue the game till it ends
 void Game::go() {
     UI::show_board(board);
     UI::show_gamesate(board);
 
-    Board mate_test_board = board.copy();
-    mate_test_board.white_to_move = !mate_test_board.white_to_move;
-
-    if (board.white_to_move && mate_test_board.in_check(Piece::white)) {
-        UI::warn("white is in checkmate and looses! Game over!");
-        return;
-
-    } else if (!board.white_to_move && mate_test_board.in_check(Piece::black)) {
-        UI::warn("black is in checkmate and looses! Game over!");
+    // If a player can't make any moves, then the game is over
+    if (board.get_legal_moves().size() == 0) {
+        string player_name = board.white_to_move ? "White" : "Black";
+        UI::warn(player_name + " is in checkmate and looses! Game over!");
         return;
     }
 
+    // Get the move from whichever player is to go.
     Move m;
 
     if (board.white_to_move) {
@@ -35,7 +32,7 @@ void Game::go() {
         m = black->go(board);
     }
 
+    // Execute move and repeat.
     board.exec_move(m);
-    
     go();
 }

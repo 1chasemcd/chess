@@ -7,6 +7,7 @@
 using std::cout;
 using std::cin;
 
+// Helpful variables
 string UI::unicode_piece_characters[7] = { " ", "♟︎", "♞", "♝", "♜", "♛", "♚"};
 string UI::alt_unicode_piece_characters[7] = { " ", "♙", "♘", "♗", "♖", "♕", "♔"};
 string UI::foreground_colors[2] = {"\e[0;30m", "\e[0;37m"};
@@ -16,7 +17,7 @@ string UI::warning_color ="\e[0;30m\e[41m";
 
 bool UI::display_to_white = true;
 
-
+// Function to show the board
 void UI::show_board(Board b) {
     // Set variables based on board display directions
     const string file_label = (display_to_white) ? "  a b c d e f g h   \n" : "  h g f e d c b a   \n";
@@ -33,6 +34,7 @@ void UI::show_board(Board b) {
     
     int piece;
 
+    // Loop through each board index to print that square
     for (int rank = rank_start; rank != rank_end; rank += rank_increment) {
         cout << rank << " ";
 
@@ -54,7 +56,9 @@ void UI::show_board(Board b) {
     cout << file_label << "\n";
 }
 
+// Method to print important info about the game
 void UI::show_gamesate(Board b) {
+    // Print whose turn it is
     if (b.white_to_move) {
         cout << "White to Move\n";
 
@@ -62,7 +66,7 @@ void UI::show_gamesate(Board b) {
         cout << "Black to Move\n";
     }
 
-
+    // Warn if a player is in check
     Board check_test_board = b.copy();
     check_test_board.white_to_move = !check_test_board.white_to_move;
 
@@ -73,6 +77,7 @@ void UI::show_gamesate(Board b) {
     cout << "\n";
 }
 
+// Get input from the user
 string UI::get_input() {
     cout << "> ";
     string input;
@@ -86,6 +91,7 @@ string UI::get_input() {
     return lower_input;
 }
 
+// Print a message with red background
 void UI::warn(string warning) {
     cout << warning_color << "\n" << warning << default_color << "\n\n";
 }

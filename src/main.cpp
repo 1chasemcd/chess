@@ -13,6 +13,7 @@ const char *chess_ascii = R"(
      ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝
 )";
 
+// Function to get a string "1" "2" or "3" for the player's choice in game type
 string get_choice() {
     string choice;
     std::cin >> choice;
@@ -26,12 +27,14 @@ string get_choice() {
 }
 
 int main() {
+    // Print instructions
     std::cout << chess_ascii << "\n\n";
     std::cout << "Instructions:\n"
                  "Moves are made of two letter-number pairs (example: b1c3). The first pair represents the "
                  "piece to move, and the second pair represents the square to move that piece to. Use O-O "
                  "for kingside castling and O-O-O for queenside castling.\n\nLet's Begin!\n\n";
     
+    // Prompt for game type
     std::cout << "Choose what kind of game you want to play by entering the number listed in parenthesis:\n"
                  "(1) Human vs Human\n"
                  "(2) Human vs AI\n"
@@ -39,6 +42,7 @@ int main() {
 
     string choice = get_choice();
 
+    // Start game based on type
     if (choice == "1") {
         Human white = Human();
         Human black = Human();
